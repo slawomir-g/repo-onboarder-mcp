@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { AnalysisOrchestrator } from "../git/AnalysisOrchestrator.js";
+import { AnalysisOrchestrator } from "../analysis/AnalysisOrchestrator.js";
 import { configService } from "../config/ConfigService.js";
 import { FileSystemService } from "../services/FileSystemService.js";
 

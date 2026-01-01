@@ -1,9 +1,9 @@
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
-import { GitService } from './GitService.js';
+import { GitService } from '../git/GitService.js';
 
-export class RepositoryManager {
+export class WorkspaceManager {
     private gitService: GitService;
     private workDir: string | null = null;
     private repoDir: string | null = null;

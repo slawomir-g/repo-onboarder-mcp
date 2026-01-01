@@ -13,7 +13,7 @@ interface TreeNode {
     [key: string]: TreeNode;
 }
 
-export class RepoCollector {
+export class ProjectCollector {
     
     /**
      * Collects all text files in the repository.

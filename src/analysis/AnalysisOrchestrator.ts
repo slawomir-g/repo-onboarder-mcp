@@ -1,9 +1,9 @@
 import * as path from 'path';
-import { RepoCollector } from '../git/RepoCollector.js';
+import { ProjectCollector } from '../workspace/ProjectCollector.js';
 import { GitCommitCollector } from '../git/GitCommitCollector.js';
 import { PromptService } from '../ai/PromptService.js';
 import { GeminiService } from '../ai/GeminiService.js';
-import { RepositoryManager } from './RepositoryManager.js';
+import { WorkspaceManager } from '../workspace/WorkspaceManager.js';
 import { ReadmeStrategy } from './strategies/ReadmeStrategy.js';
 import { AiContextStrategy } from './strategies/AiContextStrategy.js';
 import { DddRefactoringStrategy } from './strategies/DddRefactoringStrategy.js';
@@ -27,29 +27,29 @@ export interface DocumentationResult {
 
 
 export class AnalysisOrchestrator {
-    private repoCollector: RepoCollector;
+    private projectCollector: ProjectCollector;
     private gitCommitCollector: GitCommitCollector;
     private promptService: PromptService;
     private geminiService: GeminiService;
 
     constructor(config: { promptsDir: string }) {
-        this.repoCollector = new RepoCollector();
+        this.projectCollector = new ProjectCollector();
         this.gitCommitCollector = new GitCommitCollector();
         this.promptService = new PromptService(config.promptsDir);
         this.geminiService = new GeminiService();
     }
 
     async analyze(request: AnalysisRequest): Promise<DocumentationResult> {
-        const repositoryManager = new RepositoryManager();
+        const workspaceManager = new WorkspaceManager();
         let repoDir = '';
 
         try {
             // 1. Prepare Repository (Clone or Resolve Path)
-            repoDir = await repositoryManager.initializeWorkspace(request);
+            repoDir = await workspaceManager.initializeWorkspace(request);
             
             // 2. Collect Data
-            const sourceCodePayload = await this.repoCollector.collectFiles(repoDir, request.includeTests);
-            const directoryTreePayload = await this.repoCollector.collectDirectoryStructure(repoDir); 
+            const sourceCodePayload = await this.projectCollector.collectFiles(repoDir, request.includeTests);
+            const directoryTreePayload = await this.projectCollector.collectDirectoryStructure(repoDir); 
 
             // Collect Churn & Commit History
             const commitCollection = await this.gitCommitCollector.collect(repoDir);
@@ -122,7 +122,7 @@ export class AnalysisOrchestrator {
              return { documents };
 
         } finally {
-            await repositoryManager.cleanup();
+            await workspaceManager.cleanup();
         }
     }
 }
