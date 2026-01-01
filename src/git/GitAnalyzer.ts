@@ -9,7 +9,7 @@ export interface AnalysisRequest {
     repoUrl?: string; // Optional if projectPath is provided
     projectPath?: string; // Local path to analyze
     branch?: string;
-    withTest?: boolean;
+    includeTests?: boolean;
     targetLanguage?: string;
 }
 
@@ -54,7 +54,7 @@ export class GitAnalyzer {
             repoDir = await repositoryManager.prepare(request);
             
             // 2. Collect Data
-            const sourceCodePayload = await this.repoCollector.collectFiles(repoDir, request.withTest);
+            const sourceCodePayload = await this.repoCollector.collectFiles(repoDir, request.includeTests);
             const directoryTreePayload = await this.repoCollector.collectDirectoryStructure(repoDir); 
 
             // Collect Churn & Commit History
@@ -111,6 +111,37 @@ export class GitAnalyzer {
             
             for (const result of results) {
                 documents[result.key] = result.content;
+            }
+
+            // 6. Judge Documentation
+            try {
+                // Generating Judge Documentation (Evaluation)...
+                const generatedDocsPayload = Object.entries(documents)
+                    .map(([key, content]) => `<document name="${key}">\n${content}\n</document>`)
+                    .join('\n\n');
+
+                const judgeConfig = {
+                    key: "Evaluation",
+                    promptTemplate: 'judge-validation-template.md',
+                    docTemplate: 'judge-documentation-template.md'
+                };
+                
+                const prompt = await this.promptService.constructPrompt(
+                    contextXml,
+                    judgeConfig.promptTemplate,
+                    judgeConfig.docTemplate,
+                    request.targetLanguage,
+                    cacheName,
+                    generatedDocsPayload
+                );
+
+                const content = await this.geminiService.generateContent(prompt, cacheObject);
+                documents[judgeConfig.key] = content;
+
+            } catch (err: any) {
+                console.error(`Failed Judge Documentation: ${err.message}`);
+                // Don't fail the whole request, just add error doc
+                documents['Evaluation'] = `Error generating evaluation: ${err.message}`;
             }
 
              return { documents };

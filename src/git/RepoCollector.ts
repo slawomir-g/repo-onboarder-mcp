@@ -13,10 +13,10 @@ export class RepoCollector {
     /**
      * Collects all text files in the repository.
      * @param repoDir The root directory of the repository.
-     * @param withTest Whether to include test files.
+     * @param includeTests Whether to include test files.
      * @returns A string in XML format containing file contents.
      */
-    async collectFiles(repoDir: string, withTest: boolean = false): Promise<FileContent[]> {
+    async collectFiles(repoDir: string, includeTests: boolean = false): Promise<FileContent[]> {
         const ig = ignore();
         const gitignorePath = path.join(repoDir, '.gitignore');
         if (fs.existsSync(gitignorePath)) {
@@ -35,7 +35,7 @@ export class RepoCollector {
              const relativePath = path.relative(repoDir, filePath);
              
              // Simple filtering logic similar to Java implementation
-             if (!withTest && (relativePath.toLowerCase().includes('test'))) {
+             if (!includeTests && (relativePath.toLowerCase().includes('test'))) {
                  continue;
              }
 

@@ -16,3 +16,4 @@ yarn-error.log*
 # Project specific
 repo-work/
 /docs
+/debug

@@ -8,23 +8,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function runLocalTest() {
-    console.error('Starting local E2E test...');
+    console.log('Starting local E2E test...');
 
     // Path to the MCP server entry point
     // Resolving from current file (src/test/run_local.ts) to src/mcp/index.ts
     const serverScriptPath = path.resolve(__dirname, '../mcp/index.ts');
 
-    console.error(`Connecting to server at: ${serverScriptPath}`);
+    console.log(`Connecting to server at: ${serverScriptPath}`);
 
     const transport = new StdioClientTransport({
         command: "npx",
         args: ["tsx", serverScriptPath],
+        stderr: "inherit"
     });
 
     const client = new Client({
         name: "test-client",
         version: "1.0.0",
-    }, {
+    }, {    
         capabilities: {}
     });
 
@@ -52,7 +53,7 @@ async function runLocalTest() {
             arguments: {
                 projectPath: projectPath,
                 outputDir: outputDir,
-                withTest: false,
+                includeTests: false,
                 targetLanguage: "English"
             }
         });

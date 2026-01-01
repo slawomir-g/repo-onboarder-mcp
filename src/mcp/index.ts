@@ -47,7 +47,7 @@ server.registerTool(
       repoUrl: z.string().optional().describe("The URL of the Git repository to analyze (optional if projectPath provided)"),
       projectPath: z.string().optional().describe("The absolute path to the local repository to analyze (optional if repoUrl provided)"),
       branch: z.string().default("master").describe("The branch to analyze (default: master)"),
-      withTest: z.boolean().default(false).describe("Whether to include test files in analysis (default: false)"),
+      includeTests: z.boolean().default(false).describe("Whether to include test files in analysis (default: false)"),
       targetLanguage: z.string().default("English").optional().describe("The target language for the generated documentation (e.g., 'English', 'Polish')"),
       outputDir: z.string().optional().describe("Directory to write generated documentation to (relative to projectPath for local repos, or absolute). If provided, files will be written to disk.")
     }
@@ -58,7 +58,7 @@ server.registerTool(
         repoUrl: args.repoUrl,
         projectPath: args.projectPath,
         branch: args.branch,
-        withTest: args.withTest,
+        includeTests: args.includeTests,
         targetLanguage: args.targetLanguage
       });
 

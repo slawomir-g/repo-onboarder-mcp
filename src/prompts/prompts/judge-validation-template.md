@@ -17,25 +17,8 @@ Focus on the following:
 2.  **Consistency**: Do the different documents (e.g., README, Architecture, Refactoring) contradict each other?
 3.  **Accuracy**: Is the technical description accurate based on the code?
 
-# Output Requirements
+## Documentation template
 
-- Provide a concise validation report in Markdown format.
-- If everything is correct, clearly state that no issues were found.
-- If issues are found, list them clearly, referencing the specific document and the specific contradiction/hallucination.
-- Be strict but fair.
-- Use the following structure:
+# Use the following documentation template as the required structure for your final output:
 
-## Validation Report
-
-### Summary
-
-[Overall assessment status: PASS/FAIL/WARN]
-
-### Findings
-
-- [Document Name]: [Finding detailed description] (Severity: High/Medium/Low)
-  ...
-
-### Recommendations
-
-[Optional practical steps to fix the issues]
+$DOCUMENTATION_TEMPLATE$

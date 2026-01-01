@@ -24,7 +24,8 @@ export class PromptService {
         promptTemplateName: string,
         documentationTemplateName: string,
         targetLanguage?: string,
-        cachedContentName?: string
+        cachedContentName?: string,
+        generatedDocumentationPayload?: string
     ): Promise<string> {
         const promptTemplate = await this.loadTemplate(promptTemplateName);
         const documentationTemplate = await this.loadTemplate(documentationTemplateName);
@@ -47,6 +48,12 @@ export class PromptService {
 
         prompt = prompt.replace('$DOCUMENTATION_TEMPLATE$', documentationTemplate);
         prompt = prompt.replace('$LANGUAGE_INSTRUCTION$', languageInstruction);
+
+        if (generatedDocumentationPayload) {
+            prompt = prompt.replace('$GENERATED_DOCUMENTATION_PLACEHOLDER$', generatedDocumentationPayload);
+        } else {
+            prompt = prompt.replace('$GENERATED_DOCUMENTATION_PLACEHOLDER$', '');
+        }
 
         // Save generated prompt to debug file
         try {
