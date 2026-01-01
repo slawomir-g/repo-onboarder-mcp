@@ -4,6 +4,13 @@ import { GitCommitCollector } from '../git/GitCommitCollector.js';
 import { PromptService } from '../ai/PromptService.js';
 import { GeminiService } from '../ai/GeminiService.js';
 import { RepositoryManager } from './RepositoryManager.js';
+import { ReadmeStrategy } from './strategies/ReadmeStrategy.js';
+import { AiContextStrategy } from './strategies/AiContextStrategy.js';
+import { DddRefactoringStrategy } from './strategies/DddRefactoringStrategy.js';
+import { DictionaryStrategy } from './strategies/DictionaryStrategy.js';
+import { QualityAssessmentStrategy } from './strategies/QualityAssessmentStrategy.js';
+import { RefactoringStrategy } from './strategies/RefactoringStrategy.js';
+import { EvaluationStrategy } from './strategies/EvaluationStrategy.js';
 
 export interface AnalysisRequest {
     repoUrl?: string; // Optional if projectPath is provided
@@ -17,20 +24,7 @@ export interface DocumentationResult {
     documents: Record<string, string>;
 }
 
-interface DocTypeConfig {
-    key: string;
-    promptTemplate: string;
-    docTemplate: string;
-}
 
-const DOCUMENTATION_TYPES: DocTypeConfig[] = [
-    { key: "README", promptTemplate: 'readme-prompt-template.md', docTemplate: 'readme-documentation-template.md' },
-    { key: "AI Context", promptTemplate: 'ai-context-prompt-template.md', docTemplate: 'ai-context-documentation-template.md' },
-    { key: "DDD Refactoring", promptTemplate: 'ddd-refactoring-prompt-template.md', docTemplate: 'ddd-refactoring-template.md' },
-    { key: "Dictionary", promptTemplate: 'dictionary-prompt-template.md', docTemplate: 'dictionary-documentation-template.md' },
-    { key: "Quality Assessment", promptTemplate: 'quality-assessment-prompt-template.md', docTemplate: 'quality-assessment-documentation-template.md' },
-    { key: "Refactoring", promptTemplate: 'refactoring-prompt-template.md', docTemplate: 'refactoring-documentation-template.md' }
-];
 
 export class AnalysisOrchestrator {
     private repoCollector: RepoCollector;
@@ -85,27 +79,26 @@ export class AnalysisOrchestrator {
 
             // 4. Generate Cache
             const cacheObject = await this.geminiService.createCache(contextXml, 'text/plain');
-            const cacheName = cacheObject.name;
-
             // 5. Generate All Documentation Types concurrently
             const documents: Record<string, string> = {};
 
-            const generations = DOCUMENTATION_TYPES.map(async (config) => {
-                try {
-                    const prompt = await this.promptService.constructPrompt(
-                        contextXml,
-                        config.promptTemplate,
-                        config.docTemplate,
-                        request.targetLanguage,
-                        cacheName
-                    );
-                    const content = await this.geminiService.generateContent(prompt, cacheObject);
-                    return { key: config.key, content };
-                } catch (err: unknown) {
-                    const errorMessage = err instanceof Error ? err.message : String(err);
-                    console.error(`Failed ${config.key}: ${errorMessage}`);
-                    return { key: config.key, content: `Error generating ${config.key}: ${errorMessage}` };
-                }
+            const strategies = [
+                new ReadmeStrategy(),
+                new AiContextStrategy(),
+                new DddRefactoringStrategy(),
+                new DictionaryStrategy(),
+                new QualityAssessmentStrategy(),
+                new RefactoringStrategy()
+            ];
+
+            const generations = strategies.map(async (strategy) => {
+                return strategy.generate({
+                    promptService: this.promptService,
+                    geminiService: this.geminiService,
+                    contextXml,
+                    cacheObject,
+                    targetLanguage: request.targetLanguage
+                });
             });
 
             const results = await Promise.all(generations);
@@ -115,36 +108,16 @@ export class AnalysisOrchestrator {
             }
 
             // 6. Judge Documentation
-            try {
-                // Generating Judge Documentation (Evaluation)...
-                const generatedDocsPayload = Object.entries(documents)
-                    .map(([key, content]) => `<document name="${key}">\n${content}\n</document>`)
-                    .join('\n\n');
-
-                const judgeConfig = {
-                    key: "Evaluation",
-                    promptTemplate: 'judge-validation-template.md',
-                    docTemplate: 'judge-documentation-template.md'
-                };
-                
-                const prompt = await this.promptService.constructPrompt(
-                    contextXml,
-                    judgeConfig.promptTemplate,
-                    judgeConfig.docTemplate,
-                    request.targetLanguage,
-                    cacheName,
-                    generatedDocsPayload
-                );
-
-                const content = await this.geminiService.generateContent(prompt, cacheObject);
-                documents[judgeConfig.key] = content;
-
-            } catch (err: unknown) {
-                const errorMessage = err instanceof Error ? err.message : String(err);
-                console.error(`Failed Judge Documentation: ${errorMessage}`);
-                // Don't fail the whole request, just add error doc
-                documents['Evaluation'] = `Error generating evaluation: ${errorMessage}`;
-            }
+            const evaluationStrategy = new EvaluationStrategy();
+            const evaluationResult = await evaluationStrategy.generate({
+                promptService: this.promptService,
+                geminiService: this.geminiService,
+                contextXml,
+                cacheObject,
+                targetLanguage: request.targetLanguage,
+                generatedDocs: documents
+            });
+            documents[evaluationResult.key] = evaluationResult.content;
 
              return { documents };
 
