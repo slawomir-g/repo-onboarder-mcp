@@ -1,0 +1,47 @@
+{
+  "name": "repo-onboarder-mcp",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "MCP server for analyzing Git repositories",
+  "main": "dist/mcp/index.js",
+  "scripts": {
+    "build": "tsc && npm run copy-assets",
+    "copy-assets": "rm -rf dist/prompts && mkdir -p dist && cp -r src/prompts/prompts dist/",
+    "start": "node dist/mcp/index.js",
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'tsx' src/mcp/index.ts",
+    "inspector": "npx @modelcontextprotocol/inspector node dist/mcp/index.js",
+    "test:local": "tsx src/test/run_local.ts",
+    "lint": "eslint src"
+  },
+  "keywords": [
+    "mcp",
+    "git",
+    "ai",
+    "gemini"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@modelcontextprotocol/sdk": "^1.0.1",
+    "dotenv": "^17.2.3",
+    "ignore": "^7.0.5",
+    "isbinaryfile": "^5.0.7",
+    "simple-git": "^3.27.0",
+    "xml-js": "^1.6.11",
+    "xmlbuilder2": "^4.0.3",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/node": "^22.5.5",
+    "@typescript-eslint/eslint-plugin": "^8.51.0",
+    "@typescript-eslint/parser": "^8.51.0",
+    "eslint": "^9.39.2",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.5.3",
+    "typescript-eslint": "^8.51.0"
+  }
+}

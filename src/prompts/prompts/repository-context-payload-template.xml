@@ -1,0 +1,25 @@
+<repository_context>
+    <metadata>
+        <project_name>$PROJECT_NAME_PAYLOAD_PLACEHOLDER$</project_name>
+        <analysis_timestamp>$ANALYSIS_TIMESTAMP_PAYLOAD_PLACEHOLDER$</analysis_timestamp>
+        <branch>$BRANCH_PAYLOAD_PLACEHOLDER$</branch>
+    </metadata>
+
+    <structural_analysis>
+        <directory_tree>
+$DIRECTORY_TREE_PAYLOAD_PLACEHOLDER$
+        </directory_tree>
+    </structural_analysis>
+    <temporal_analysis>
+        <hotspots>
+$HOTSPOTS_PAYLOAD_PLACEHOLDER$
+        </hotspots>
+        <recent_history>
+$COMMIT_HISTORY_PAYLOAD_PLACEHOLDER$
+        </recent_history>
+    </temporal_analysis>
+
+    <source_code_corpus>
+$SOURCE_CODE_CORPUS_PAYLOAD_PLACEHOLDER$
+    </source_code_corpus>
+</repository_context>
