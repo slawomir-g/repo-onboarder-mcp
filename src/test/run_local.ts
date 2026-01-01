@@ -60,7 +60,7 @@ async function runLocalTest() {
 
         console.log('Tool execution result:', JSON.stringify(result, null, 2));
 
-        if ((result as any).isError) {
+        if ((result as { isError?: boolean }).isError) {
              console.error('Tool execution returned an error frame.');
              process.exit(1);
         }

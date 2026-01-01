@@ -1,6 +1,5 @@
-import { simpleGit, SimpleGit, CleanOptions } from 'simple-git';
+import { simpleGit, SimpleGit } from 'simple-git';
 import * as fs from 'fs';
-import * as path from 'path';
 
 export class GitService {
     private git: SimpleGit;
@@ -21,7 +20,7 @@ export class GitService {
 
 
         
-        const cloneOptions: any = {
+        const cloneOptions: Record<string, string | number> = {
            '--depth': 1,
         };
         

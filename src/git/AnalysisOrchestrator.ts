@@ -32,7 +32,7 @@ const DOCUMENTATION_TYPES: DocTypeConfig[] = [
     { key: "Refactoring", promptTemplate: 'refactoring-prompt-template.md', docTemplate: 'refactoring-documentation-template.md' }
 ];
 
-export class GitAnalyzer {
+export class AnalysisOrchestrator {
     private repoCollector: RepoCollector;
     private gitCommitCollector: GitCommitCollector;
     private promptService: PromptService;
@@ -51,7 +51,7 @@ export class GitAnalyzer {
 
         try {
             // 1. Prepare Repository (Clone or Resolve Path)
-            repoDir = await repositoryManager.prepare(request);
+            repoDir = await repositoryManager.initializeWorkspace(request);
             
             // 2. Collect Data
             const sourceCodePayload = await this.repoCollector.collectFiles(repoDir, request.includeTests);
@@ -101,9 +101,10 @@ export class GitAnalyzer {
                     );
                     const content = await this.geminiService.generateContent(prompt, cacheObject);
                     return { key: config.key, content };
-                } catch (err: any) {
-                    console.error(`Failed ${config.key}: ${err.message}`);
-                    return { key: config.key, content: `Error generating ${config.key}: ${err.message}` };
+                } catch (err: unknown) {
+                    const errorMessage = err instanceof Error ? err.message : String(err);
+                    console.error(`Failed ${config.key}: ${errorMessage}`);
+                    return { key: config.key, content: `Error generating ${config.key}: ${errorMessage}` };
                 }
             });
 
@@ -138,10 +139,11 @@ export class GitAnalyzer {
                 const content = await this.geminiService.generateContent(prompt, cacheObject);
                 documents[judgeConfig.key] = content;
 
-            } catch (err: any) {
-                console.error(`Failed Judge Documentation: ${err.message}`);
+            } catch (err: unknown) {
+                const errorMessage = err instanceof Error ? err.message : String(err);
+                console.error(`Failed Judge Documentation: ${errorMessage}`);
                 // Don't fail the whole request, just add error doc
-                documents['Evaluation'] = `Error generating evaluation: ${err.message}`;
+                documents['Evaluation'] = `Error generating evaluation: ${errorMessage}`;
             }
 
              return { documents };

@@ -2,6 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { create } from 'xmlbuilder2';
 import { FileContent } from '../git/RepoCollector.js';
+import { CommitInfo, FileStats } from '../git/GitCommitCollector.js';
+import { DebugLogger } from '../utils/DebugLogger.js';
 
 export class PromptService {
     
@@ -57,17 +59,11 @@ export class PromptService {
 
         // Save generated prompt to debug file
         try {
-            const debugDir = path.join(process.cwd(), 'debug');
-            if (!fs.existsSync(debugDir)) {
-                await fs.promises.mkdir(debugDir, { recursive: true });
-            }
             const cleanTemplateName = path.parse(promptTemplateName).name;
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const debugFile = path.join(debugDir, `prepared_prompt_${cleanTemplateName}_${timestamp}.txt`);
-            
-            await fs.promises.writeFile(debugFile, prompt);
-        } catch (e: any) {
-            console.warn(`[DEBUG] Failed to save prepared prompt: ${e.message}`);
+            await DebugLogger.log(`prepared_prompt_${cleanTemplateName}`, prompt);
+        } catch (e: unknown) {
+            const errorMessage = e instanceof Error ? e.message : String(e);
+            console.warn(`[DEBUG] Failed to save prepared prompt: ${errorMessage}`);
         }
 
         return prompt;
@@ -79,8 +75,8 @@ export class PromptService {
         branch: string,
         directoryTreePayload: string,
         sourceCodeFiles: FileContent[],
-        hotspots: any[] = [],
-        commits: any[] = []
+        hotspots: FileStats[] = [],
+        commits: CommitInfo[] = []
     ): Promise<string> {
         // Building XML with xmlbuilder2 for safety
         const root = create({ version: '1.0' })
@@ -98,9 +94,10 @@ export class PromptService {
                 corpusNode.ele('file', { path: file.path })
                     .dat(sanitized) // Use CDATA for file content to avoid escaping issues
                     .up();
-            } catch (e: any) {
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
                 console.error(`ERROR: Failed to add file to XML: ${file.path}`);
-                console.error(`Error message: ${e.message}`);
+                console.error(`Error message: ${errorMessage}`);
                 // Skip problematic file but proceed
             }
         }

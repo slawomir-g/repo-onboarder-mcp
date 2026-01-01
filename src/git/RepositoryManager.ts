@@ -13,7 +13,7 @@ export class RepositoryManager {
         this.gitService = new GitService();
     }
 
-    async prepare(request: { repoUrl?: string; projectPath?: string; branch?: string }): Promise<string> {
+    async initializeWorkspace(request: { repoUrl?: string; projectPath?: string; branch?: string }): Promise<string> {
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 
         if (request.projectPath) {

@@ -2,10 +2,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import ignore from 'ignore';
 import { isBinaryFile } from 'isbinaryfile';
+import { DebugLogger } from '../utils/DebugLogger.js';
 
 export interface FileContent {
     path: string;
     content: string;
+}
+
+interface TreeNode {
+    [key: string]: TreeNode;
 }
 
 export class RepoCollector {
@@ -52,14 +57,8 @@ export class RepoCollector {
         }
         
         try {
-            const debugDir = path.join(process.cwd(), 'debug');
-            if (!fs.existsSync(debugDir)) {
-                await fs.promises.mkdir(debugDir, { recursive: true });
-            }
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const debugFile = path.join(debugDir, `repo_snapshot_${timestamp}.json`);
-            await fs.promises.writeFile(debugFile, JSON.stringify(fileContents, null, 2));
-            console.error(`[DEBUG] Saved repo snapshot to ${debugFile}`);
+            await DebugLogger.log('repo_snapshot', JSON.stringify(fileContents, null, 2), 'json');
+            // console.error(`[DEBUG] Saved repo snapshot to ${debugFile}`);
         } catch (e) {
             console.warn('[DEBUG] Failed to save repo snapshot:', e);
         }
@@ -83,7 +82,7 @@ export class RepoCollector {
     }
 
     private generateAsciiTree(files: string[]): string {
-        const root: any = {};
+        const root: TreeNode = {};
         for (const file of files) {
             const parts = file.split(path.sep);
             let current = root;
@@ -98,7 +97,7 @@ export class RepoCollector {
         return this.printTree(root, '');
     }
 
-    private printTree(node: any, prefix: string): string {
+    private printTree(node: TreeNode, prefix: string): string {
         let output = '';
         const keys = Object.keys(node).sort();
         for (let i = 0; i < keys.length; i++) {

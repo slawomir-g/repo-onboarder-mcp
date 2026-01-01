@@ -1,8 +1,8 @@
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
-import { GoogleAICacheManager } from '@google/generative-ai/server';
-import * as path from 'path';
+import { GoogleAICacheManager, CachedContent } from '@google/generative-ai/server';
 import * as crypto from 'crypto';
-import * as fs from 'fs';
+import { configService } from '../config/ConfigService.js';
+import { DebugLogger } from '../utils/DebugLogger.js';
 
 // Environment variables are expected to be loaded by the entry point (index.ts)
 
@@ -10,38 +10,33 @@ export class GeminiService {
     private genAI: GoogleGenerativeAI;
     private model: GenerativeModel;
     private cacheManager: GoogleAICacheManager;
-    private readonly MODEL_NAME = 'gemini-3-flash-preview';
 
     constructor() {
-        const apiKey = process.env.GEMINI_API_KEY;
-        if (!apiKey) {
-            throw new Error('GEMINI_API_KEY environment variable is not set');
-        }
+        const apiKey = configService.GEMINI_API_KEY;
+        const modelName = configService.GEMINI_MODEL;
+        
         this.genAI = new GoogleGenerativeAI(apiKey);
-        this.model = this.genAI.getGenerativeModel({ model: this.MODEL_NAME }); 
+        this.model = this.genAI.getGenerativeModel({ model: modelName }); 
         this.cacheManager = new GoogleAICacheManager(apiKey);
     }
 
-    async createCache(content: string, mimeType: string, ttlSeconds: number = 600): Promise<any> {
+    async createCache(content: string, mimeType: string, ttlSeconds: number = 600): Promise<CachedContent> {
         try {
-            const debugDir = path.join(process.cwd(), 'debug');
-            if (!fs.existsSync(debugDir)) {
-                await fs.promises.mkdir(debugDir, { recursive: true });
-            }
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const debugFile = path.join(debugDir, `ai_cache_content_${timestamp}.txt`);
-            await fs.promises.writeFile(debugFile, content);
+            await DebugLogger.log('ai_cache_content', content);
         } catch (e) {
+            // The original instruction implies replacing manual debug logging.
+            // This catch block is for DebugLogger.log itself, so we keep it as console.warn.
             console.warn('[DEBUG] Failed to save AI cache content:', e);
         }
 
         const hash = this.computeHash(content);
+        const modelName = configService.GEMINI_MODEL;
         
         try {
             // Stateless check: List active caches and find one with displayName == hash
             const listResult = await this.cacheManager.list();
             if (listResult && listResult.cachedContents) {
-                const existingCache = listResult.cachedContents.find((c: any) => c.displayName === hash);
+                const existingCache = listResult.cachedContents.find((c: CachedContent) => c.displayName === hash);
                 if (existingCache) {
                     console.error(`REUSING CACHE (Server-side found): ${existingCache.name} (Hash: ${hash.substring(0, 8)}...)`);
                     return existingCache;
@@ -53,7 +48,7 @@ export class GeminiService {
 
         console.error(`CREATING NEW CACHE (Hash: ${hash.substring(0, 8)}...)`);
         const cache = await this.cacheManager.create({
-            model: this.MODEL_NAME,
+            model: modelName,
             displayName: hash, // Store hash as displayName for retrieval
             contents: [
                 {
@@ -75,27 +70,24 @@ export class GeminiService {
         return crypto.createHash('sha256').update(content).digest('hex');
     }
 
-    async generateContent(prompt: string, cachedContent?: any): Promise<string> {
+    async generateContent(prompt: string, cachedContent?: CachedContent): Promise<string> {
         let model = this.model;
+        const modelName = configService.GEMINI_MODEL;
         
         if (cachedContent) {
             // Correct way to use cached content in v0.24.1+
             // We pass the cache object (which contains the name)
             model = this.genAI.getGenerativeModelFromCachedContent(
                 cachedContent,
-                { model: this.MODEL_NAME }
+                { model: modelName }
             );
         }
 
         try {
-            const debugDir = path.join(process.cwd(), 'debug');
-            if (!fs.existsSync(debugDir)) {
-                await fs.promises.mkdir(debugDir, { recursive: true });
-            }
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const debugFile = path.join(debugDir, `ai_prompt_${timestamp}.txt`);
-            await fs.promises.writeFile(debugFile, prompt);
+            await DebugLogger.log('ai_prompt', prompt);
         } catch (e) {
+            // The original instruction implies replacing manual debug logging.
+            // This catch block is for DebugLogger.log itself, so we keep it as console.warn.
             console.warn('[DEBUG] Failed to save AI prompt:', e);
         }
 
