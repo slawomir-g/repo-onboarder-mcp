@@ -1,7 +1,9 @@
+/* eslint-disable no-console */
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import * as fs from 'fs';
 import assert from 'assert';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -10,9 +12,16 @@ const __dirname = path.dirname(__filename);
 async function runLocalTest() {
     console.log('Starting local E2E test...');
 
+    const projectPath = process.cwd();
+    const outputDir = path.join(projectPath, 'debug');
+
+    // Cleanup debug directory
+    await fs.promises.rm(outputDir, { recursive: true, force: true });
+    console.log(`Cleaned up directory: ${outputDir}`);
+
     // Path to the MCP server entry point
-    // Resolving from current file (src/test/run_local.ts) to src/mcp/index.ts
-    const serverScriptPath = path.resolve(__dirname, '../mcp/index.ts');
+    // Resolving from current file (src/mcp/index.e2e.ts) to src/mcp/index.ts
+    const serverScriptPath = path.resolve(__dirname, './index.ts');
 
     console.log(`Connecting to server at: ${serverScriptPath}`);
 
@@ -43,8 +52,7 @@ async function runLocalTest() {
         assert.ok(tool, `Tool ${toolName} should be available`);
 
         // Call generateDocumentation
-        const projectPath = process.cwd();
-        const outputDir = path.join(projectPath, 'debug', 'e2e_test_output');
+        // Variables projectPath and outputDir are defined at the top function scope
         
         console.log(`Calling ${toolName} for ${projectPath}...`);
         

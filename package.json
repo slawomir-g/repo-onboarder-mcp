@@ -6,13 +6,13 @@
   "main": "dist/mcp/index.js",
   "scripts": {
     "build": "tsc && npm run copy-assets",
-    "copy-assets": "rm -rf dist/prompts && mkdir -p dist && cp -r src/prompts/prompts dist/",
+    "copy-assets": "rm -rf dist/prompts && mkdir -p dist && cp -r src/prompts dist/",
     "start": "node dist/mcp/index.js",
     "dev": "nodemon --watch 'src/**/*.ts' --exec 'tsx' src/mcp/index.ts",
     "inspector": "npx @modelcontextprotocol/inspector node dist/mcp/index.js",
-    "test:local": "tsx src/test/run_local.ts",
+    "test:local": "tsx src/mcp/index.e2e.ts",
     "lint": "eslint src"
-  },
+  },  
   "keywords": [
     "mcp",
     "git",

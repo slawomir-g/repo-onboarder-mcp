@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { create } from 'xmlbuilder2';
-import { FileContent } from '../git/RepoCollector.js';
+import { FileContent } from '../workspace/ProjectCollector.js';
 import { CommitInfo, FileStats } from '../git/GitCommitCollector.js';
 import { DebugLogger } from '../utils/DebugLogger.js';
 
