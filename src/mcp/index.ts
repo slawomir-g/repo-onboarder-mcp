@@ -27,15 +27,10 @@ server.registerTool(
   {
     description: "Analyzes a Git or local repository and generates documentation",
     inputSchema: {
-      repoUrl: z
-        .string()
-        .optional()
-        .describe("The URL of the Git repository to analyze (optional if projectPath provided)"),
       projectPath: z
         .string()
-        .optional()
-        .describe("The absolute path to the local repository to analyze (optional if repoUrl provided)"),
-      branch: z.string().default("master").describe("The branch to analyze (default: master)"),
+        .describe("The absolute path to the local repository to analyze"),
+
       includeTests: z.boolean().default(false).describe("Whether to include test files in analysis (default: false)"),
       targetLanguage: z
         .string()
@@ -46,16 +41,14 @@ server.registerTool(
         .string()
         .optional()
         .describe(
-          "Directory to write generated documentation to (relative to projectPath for local repos, or absolute). If provided, files will be written to disk.",
+          "Directory to write generated documentation to (relative to projectPath, or absolute). If provided, files will be written to disk.",
         ),
     },
   },
   async (args) => {
     try {
       const result = await gitAnalyzer.analyze({
-        repoUrl: args.repoUrl,
         projectPath: args.projectPath,
-        branch: args.branch,
         includeTests: args.includeTests,
         targetLanguage: args.targetLanguage,
       });

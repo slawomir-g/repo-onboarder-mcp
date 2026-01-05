@@ -3,7 +3,7 @@ import * as path from "node:path";
 import { create } from "xmlbuilder2";
 import type { CommitInfo, FileStats } from "../git/GitCommitCollector.js";
 import { DebugLogger } from "../utils/DebugLogger.js";
-import type { FileContent } from "../workspace/ProjectCollector.js";
+import type { FileContent } from "../analysis/ProjectCollector.js";
 
 export class PromptService {
   private promptsDir: string;

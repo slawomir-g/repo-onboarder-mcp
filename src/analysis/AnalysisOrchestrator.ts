@@ -1,9 +1,10 @@
+import * as fs from "node:fs";
 import * as path from "node:path";
 import { GeminiService } from "../ai/GeminiService.js";
 import { PromptService } from "../ai/PromptService.js";
 import { GitCommitCollector } from "../git/GitCommitCollector.js";
-import { ProjectCollector } from "../workspace/ProjectCollector.js";
-import { WorkspaceManager } from "../workspace/WorkspaceManager.js";
+import { ProjectCollector } from "./ProjectCollector.js";
+
 import { AiContextStrategy } from "./strategies/AiContextStrategy.js";
 import { DddRefactoringStrategy } from "./strategies/DddRefactoringStrategy.js";
 import { DictionaryStrategy } from "./strategies/DictionaryStrategy.js";
@@ -13,9 +14,8 @@ import { ReadmeStrategy } from "./strategies/ReadmeStrategy.js";
 import { RefactoringStrategy } from "./strategies/RefactoringStrategy.js";
 
 export interface AnalysisRequest {
-  repoUrl?: string; // Optional if projectPath is provided
-  projectPath?: string; // Local path to analyze
-  branch?: string;
+  projectPath: string; // Local path to analyze
+
   includeTests?: boolean;
   targetLanguage?: string;
 }
@@ -38,12 +38,13 @@ export class AnalysisOrchestrator {
   }
 
   async analyze(request: AnalysisRequest): Promise<DocumentationResult> {
-    const workspaceManager = new WorkspaceManager();
-    let repoDir = "";
+    const repoDir = path.resolve(request.projectPath);
+    if (!fs.existsSync(repoDir)) {
+      throw new Error(`Project path does not exist: ${repoDir}`);
+    }
+    
 
-    try {
-      // 1. Prepare Repository (Clone or Resolve Path)
-      repoDir = await workspaceManager.initializeWorkspace(request);
+
 
       // 2. Collect Data
       const sourceCodePayload = await this.projectCollector.collectFiles(repoDir, request.includeTests);
@@ -53,10 +54,7 @@ export class AnalysisOrchestrator {
       const commitCollection = await this.gitCommitCollector.collect(repoDir);
 
       // 3. Prepare Context
-      const projectName = request.projectPath
-        ? path.basename(request.projectPath)
-        : // biome-ignore lint/style/noNonNullAssertion: guaranteed by validation logic
-          path.basename(request.repoUrl!, ".git");
+      const projectName = path.basename(request.projectPath);
 
       // Use the latest commit date as the timestamp to ensure stable context for caching
       // If no commits, fall back to current time
@@ -69,7 +67,7 @@ export class AnalysisOrchestrator {
       const contextXml = await this.promptService.constructRepositoryContext(
         projectName,
         timestamp,
-        request.branch || "HEAD",
+        "HEAD",
         directoryTreePayload,
         sourceCodePayload, // Now passing FileContent[]
         commitCollection.hotspots, // Passing raw data
@@ -119,8 +117,6 @@ export class AnalysisOrchestrator {
       documents[evaluationResult.key] = evaluationResult.content;
 
       return { documents };
-    } finally {
-      await workspaceManager.cleanup();
-    }
   }
 }
+
