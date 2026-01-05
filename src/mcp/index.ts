@@ -27,13 +27,28 @@ server.registerTool(
   {
     description: "Analyzes a Git or local repository and generates documentation",
     inputSchema: {
-      repoUrl: z.string().optional().describe("The URL of the Git repository to analyze (optional if projectPath provided)"),
-      projectPath: z.string().optional().describe("The absolute path to the local repository to analyze (optional if repoUrl provided)"),
+      repoUrl: z
+        .string()
+        .optional()
+        .describe("The URL of the Git repository to analyze (optional if projectPath provided)"),
+      projectPath: z
+        .string()
+        .optional()
+        .describe("The absolute path to the local repository to analyze (optional if repoUrl provided)"),
       branch: z.string().default("master").describe("The branch to analyze (default: master)"),
       includeTests: z.boolean().default(false).describe("Whether to include test files in analysis (default: false)"),
-      targetLanguage: z.string().default("English").optional().describe("The target language for the generated documentation (e.g., 'English', 'Polish')"),
-      outputDir: z.string().optional().describe("Directory to write generated documentation to (relative to projectPath for local repos, or absolute). If provided, files will be written to disk.")
-    }
+      targetLanguage: z
+        .string()
+        .default("English")
+        .optional()
+        .describe("The target language for the generated documentation (e.g., 'English', 'Polish')"),
+      outputDir: z
+        .string()
+        .optional()
+        .describe(
+          "Directory to write generated documentation to (relative to projectPath for local repos, or absolute). If provided, files will be written to disk.",
+        ),
+    },
   },
   async (args) => {
     try {
@@ -42,7 +57,7 @@ server.registerTool(
         projectPath: args.projectPath,
         branch: args.branch,
         includeTests: args.includeTests,
-        targetLanguage: args.targetLanguage
+        targetLanguage: args.targetLanguage,
       });
 
       // Handle file writing if outputDir is provided
@@ -54,14 +69,15 @@ server.registerTool(
       // Format the output for MCP
       let content = "";
       if (args.outputDir) {
-          const targetDir = fileSystemService.resolveOutputDirectory(args.outputDir, args.projectPath);
-          content = `DOCUMENTATION GENERATED.\n\nFiles have been successfully written to: ${targetDir}`;
+        const targetDir = fileSystemService.resolveOutputDirectory(args.outputDir, args.projectPath);
+        content = `DOCUMENTATION GENERATED.\n\nFiles have been successfully written to: ${targetDir}`;
       } else {
-          const introText = `RECOMMENDATION: The following documentation MD files are generated for your project. Be aware that it will overwrite existing files. It is suggested to save them in a \`docs/\` directory at the root of your project, or another location if preferred.`;
-          
-          content = [introText, ...Object.entries(result.documents)
-            .map(([type, text]) => `## ${type}\n\n${text}`)]
-            .join("\n\n---\n\n");
+        const introText =
+          "RECOMMENDATION: The following documentation MD files are generated for your project. Be aware that it will overwrite existing files. It is suggested to save them in a `docs/` directory at the root of your project, or another location if preferred.";
+
+        content = [introText, ...Object.entries(result.documents).map(([type, text]) => `## ${type}\n\n${text}`)].join(
+          "\n\n---\n\n",
+        );
       }
 
       return {
@@ -69,7 +85,6 @@ server.registerTool(
           {
             type: "text",
             text: content,
-            
           },
         ],
       };
@@ -85,7 +100,7 @@ server.registerTool(
         isError: true,
       };
     }
-  }
+  },
 );
 
 async function main() {

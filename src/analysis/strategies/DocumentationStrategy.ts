@@ -1,18 +1,18 @@
-import { PromptService } from '../../ai/PromptService.js';
-import { GeminiService } from '../../ai/GeminiService.js';
+import type { GeminiService } from "../../ai/GeminiService.js";
+import type { PromptService } from "../../ai/PromptService.js";
 
 export interface GenerationContext {
-    promptService: PromptService;
-    geminiService: GeminiService;
-    contextXml: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    cacheObject?: any;
-    targetLanguage?: string;
-    // Optional because not all strategies need it, but Evaluation does
-    generatedDocs?: Record<string, string>;
+  promptService: PromptService;
+  geminiService: GeminiService;
+  contextXml: string;
+  // biome-ignore lint/suspicious/noExplicitAny: library interaction
+  cacheObject?: any;
+  targetLanguage?: string;
+  // Optional because not all strategies need it, but Evaluation does
+  generatedDocs?: Record<string, string>;
 }
 
 export interface DocumentationStrategy {
-    key: string;
-    generate(context: GenerationContext): Promise<{ key: string, content: string }>;
+  key: string;
+  generate(context: GenerationContext): Promise<{ key: string; content: string }>;
 }

@@ -1,44 +1,41 @@
-import { simpleGit, SimpleGit } from 'simple-git';
-import * as fs from 'fs';
+import * as fs from "node:fs";
+import { type SimpleGit, simpleGit } from "simple-git";
 
 export class GitService {
-    private git: SimpleGit;
+  private git: SimpleGit;
 
-    constructor(baseDir?: string) {
-        this.git = simpleGit(baseDir);
+  constructor(baseDir?: string) {
+    this.git = simpleGit(baseDir);
+  }
+
+  /**
+   * Clones a repository to a specific directory.
+   * @param repoUrl The URL of the repository to clone.
+   * @param targetDir The directory where the repository should be cloned.
+   * @param branch Optional branch to checkout.
+   */
+  async cloneRepo(repoUrl: string, targetDir: string, branch?: string): Promise<void> {
+    // Ensure parent directory exists
+    await fs.promises.mkdir(targetDir, { recursive: true });
+
+    const cloneOptions: Record<string, string | number> = {
+      "--depth": 1,
+    };
+
+    if (branch) {
+      cloneOptions["--branch"] = branch;
     }
 
-    /**
-     * Clones a repository to a specific directory.
-     * @param repoUrl The URL of the repository to clone.
-     * @param targetDir The directory where the repository should be cloned.
-     * @param branch Optional branch to checkout.
-     */
-    async cloneRepo(repoUrl: string, targetDir: string, branch?: string): Promise<void> {
-        // Ensure parent directory exists
-        await fs.promises.mkdir(targetDir, { recursive: true });
+    await this.git.clone(repoUrl, targetDir, cloneOptions);
+  }
 
-
-        
-        const cloneOptions: Record<string, string | number> = {
-           '--depth': 1,
-        };
-        
-        if (branch) {
-            cloneOptions['--branch'] = branch;
-        }
-
-        await this.git.clone(repoUrl, targetDir, cloneOptions);
-
-    }
-
-    /**
-     * Checks out a specific branch.
-     * @param repoDir The directory of the repository.
-     * @param branch The branch name to checkout.
-     */
-    async checkout(repoDir: string, branch: string): Promise<void> {
-         const gitRepo = simpleGit(repoDir);
-         await gitRepo.checkout(branch);
-    }
+  /**
+   * Checks out a specific branch.
+   * @param repoDir The directory of the repository.
+   * @param branch The branch name to checkout.
+   */
+  async checkout(repoDir: string, branch: string): Promise<void> {
+    const gitRepo = simpleGit(repoDir);
+    await gitRepo.checkout(branch);
+  }
 }

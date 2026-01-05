@@ -8,11 +8,12 @@
     "build": "tsc && npm run copy-assets",
     "copy-assets": "rm -rf dist/prompts && mkdir -p dist && cp -r src/prompts dist/",
     "start": "node dist/mcp/index.js",
-    "dev": "nodemon --watch 'src/**/*.ts' --exec 'tsx' src/mcp/index.ts",
+    "dev": "node --watch --experimental-strip-types src/mcp/index.ts",
     "inspector": "npx @modelcontextprotocol/inspector node dist/mcp/index.js",
     "test:local": "tsx src/mcp/index.e2e.ts",
-    "lint": "eslint src"
-  },  
+    "lint": "biome check src",
+    "format": "biome format src --write"
+  },
   "keywords": [
     "mcp",
     "git",
@@ -20,7 +21,7 @@
     "gemini"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@modelcontextprotocol/sdk": "^1.0.1",
@@ -33,15 +34,9 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
+    "@biomejs/biome": "^1.8.3",
     "@types/node": "^22.5.5",
-    "@typescript-eslint/eslint-plugin": "^8.51.0",
-    "@typescript-eslint/parser": "^8.51.0",
-    "eslint": "^9.39.2",
-    "nodemon": "^3.1.4",
-    "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
-    "typescript": "^5.5.3",
-    "typescript-eslint": "^8.51.0"
+    "typescript": "^5.5.3"
   }
 }

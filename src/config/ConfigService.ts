@@ -15,7 +15,7 @@ export type Config = z.infer<typeof configSchema>;
 
 class ConfigService {
   private static instance: ConfigService;
-  
+
   public readonly GEMINI_API_KEY: string;
   public readonly GEMINI_MODEL: string;
   public readonly DEBUG_MODE: boolean;

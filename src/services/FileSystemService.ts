@@ -1,7 +1,7 @@
-import * as fs from "fs/promises";
-import * as fsSync from "fs";
-import * as path from "path";
-import { fileURLToPath } from "url";
+import * as fsSync from "node:fs";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 
 export class FileSystemService {
   /**
@@ -14,11 +14,11 @@ export class FileSystemService {
     if (path.isAbsolute(outputDir)) {
       return outputDir;
     }
-    
+
     if (projectPath) {
       return path.resolve(projectPath, outputDir);
     }
-    
+
     return path.resolve(process.cwd(), outputDir);
   }
 
@@ -30,8 +30,8 @@ export class FileSystemService {
     await fs.mkdir(targetDir, { recursive: true });
 
     for (const [docType, content] of Object.entries(documents)) {
-      const filename = `${docType.toLowerCase().replace(/\s+/g, '-')}.md`;
-      await fs.writeFile(path.join(targetDir, filename), content, 'utf-8');
+      const filename = `${docType.toLowerCase().replace(/\s+/g, "-")}.md`;
+      await fs.writeFile(path.join(targetDir, filename), content, "utf-8");
     }
   }
 
@@ -41,34 +41,15 @@ export class FileSystemService {
    */
   resolvePromptsDir(): string {
     const currentDir = path.dirname(fileURLToPath(import.meta.url));
-    
-    // Logic adapted from src/mcp/index.ts
-    // Assuming structure:
-    // src/services/FileSystemService.ts
-    // src/prompts/prompts/*.md
-    //
-    // dist/services/FileSystemService.js
-    // dist/prompts/*.md (potentially flattened in build?) OR dist/prompts/prompts/*.md
-    
-    // In original code (src/mcp/index.ts):
-    // const distPath = path.resolve(currentDir, '../prompts'); // -> src/prompts
-    // checks for 'readme-prompt-template.md' directly in src/prompts
-    
-    // const srcPath = path.resolve(currentDir, '../prompts/prompts'); // -> src/prompts/prompts
-    // checks for 'readme-prompt-template.md' in src/prompts/prompts
-    
-    // Note: In our current fs check, the files ARE in src/prompts/prompts.
-    // So the 'distPath' check in original code (checking ../prompts) would FAIL in dev environment.
-    // Use the same logic.
 
-    const distPath = path.resolve(currentDir, '../prompts');
-    if (fsSync.existsSync(path.join(distPath, 'readme-prompt-template.md'))) {
-        return distPath;
+    const distPath = path.resolve(currentDir, "../prompts");
+    if (fsSync.existsSync(path.join(distPath, "readme-prompt-template.md"))) {
+      return distPath;
     }
 
-    const srcPath = path.resolve(currentDir, '../prompts/prompts');
-    if (fsSync.existsSync(path.join(srcPath, 'readme-prompt-template.md'))) {
-        return srcPath;
+    const srcPath = path.resolve(currentDir, "../prompts/prompts");
+    if (fsSync.existsSync(path.join(srcPath, "readme-prompt-template.md"))) {
+      return srcPath;
     }
 
     // Fallback
