@@ -8,8 +8,8 @@
 - **Runtime:** Use Node.js 22+ native features exclusively.
 - **Forbidden Tools:** DO NOT use or suggest `ts-node`, `nodemon`, `babel`, or `webpack` for backend logic.
 - **Execution Strategy:**
-  - **Dev:** `node --watch --experimental-strip-types --env-file=.env src/mcp/index.ts`
-  - **Prod:** `node dist/mcp/index.js` (compiled JS)
+  - **Dev:** `node --watch --experimental-strip-types --env-file=.env src/index.ts`
+  - **Prod:** `node dist/index.js` (compiled JS)
 - **Modules:** Always use ESM (`"type": "module"` in `package.json`).
 
 ## 2. TypeScript Configuration & Best Practices
