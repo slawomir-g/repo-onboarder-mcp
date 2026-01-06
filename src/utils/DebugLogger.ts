@@ -2,6 +2,8 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { configService } from "../config/ConfigService.js";
 
+import { logger } from "./logger.js";
+
 const DEBUG_DIR = path.join(process.cwd(), "debug");
 
 async function ensureDebugDir(): Promise<void> {
@@ -12,7 +14,7 @@ async function ensureDebugDir(): Promise<void> {
       await fs.promises.mkdir(DEBUG_DIR, { recursive: true });
     }
   } catch (error) {
-    console.warn(`[DEBUG] Failed to create debug directory: ${error}`);
+    logger.warn(`[DEBUG] Failed to create debug directory: ${error}`);
   }
 }
 
@@ -25,7 +27,7 @@ export const DebugLogger = {
       const filePath = path.join(DEBUG_DIR, `${filename}.${extension}`);
       await fs.promises.writeFile(filePath, content, "utf-8");
     } catch (error) {
-      console.warn(`[DEBUG] Failed to write debug log ${filename}: ${error}`);
+      logger.warn(`[DEBUG] Failed to write debug log ${filename}: ${error}`);
     }
   },
 };

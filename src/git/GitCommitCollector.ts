@@ -1,4 +1,5 @@
 import { type SimpleGit, simpleGit } from "simple-git";
+import { logger } from "../utils/logger.js";
 
 export interface FileChange {
   type: "ADD" | "DELETE" | "MODIFY" | "RENAME" | "UNKNOWN";
@@ -57,7 +58,7 @@ export class GitCommitCollector {
     try {
       rawLog = await git.raw(["log", ...logOptions]);
     } catch (e) {
-      console.warn("Failed to fetch git log, returning empty history.", e);
+      logger.warn("Failed to fetch git log, returning empty history.", e);
       return { commits: [], hotspots: [] };
     }
 

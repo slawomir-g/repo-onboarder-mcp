@@ -1,9 +1,9 @@
-import type { GeminiService } from "../../ai/GeminiService.js";
+import type { IGeminiService } from "../../ai/IGeminiService.js";
 import type { PromptService } from "../../ai/PromptService.js";
 
 export interface GenerationContext {
   promptService: PromptService;
-  geminiService: GeminiService;
+  geminiService: IGeminiService;
   contextXml: string;
   // biome-ignore lint/suspicious/noExplicitAny: library interaction
   cacheObject?: any;

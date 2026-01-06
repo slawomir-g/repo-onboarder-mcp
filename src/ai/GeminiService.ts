@@ -3,10 +3,13 @@ import { type GenerativeModel, GoogleGenerativeAI } from "@google/generative-ai"
 import { type CachedContent, GoogleAICacheManager } from "@google/generative-ai/server";
 import { configService } from "../config/ConfigService.js";
 import { DebugLogger } from "../utils/DebugLogger.js";
+import { logger } from "../utils/logger.js";
+
+import type { IGeminiService } from "./IGeminiService.js";
 
 // Environment variables are expected to be loaded by the entry point (index.ts)
 
-export class GeminiService {
+export class GeminiService implements IGeminiService {
   private genAI: GoogleGenerativeAI;
   private model: GenerativeModel;
   private cacheManager: GoogleAICacheManager;
@@ -26,7 +29,7 @@ export class GeminiService {
     } catch (e) {
       // The original instruction implies replacing manual debug logging.
       // This catch block is for DebugLogger.log itself, so we keep it as console.warn.
-      console.warn("[DEBUG] Failed to save AI cache content:", e);
+      logger.warn("[DEBUG] Failed to save AI cache content:", e);
     }
 
     const hash = this.computeHash(content);
@@ -38,15 +41,15 @@ export class GeminiService {
       if (listResult?.cachedContents) {
         const existingCache = listResult.cachedContents.find((c: CachedContent) => c.displayName === hash);
         if (existingCache) {
-          console.error(`REUSING CACHE (Server-side found): ${existingCache.name} (Hash: ${hash.substring(0, 8)}...)`);
+          logger.error(`REUSING CACHE (Server-side found): ${existingCache.name} (Hash: ${hash.substring(0, 8)}...)`);
           return existingCache;
         }
       }
     } catch (e) {
-      console.warn("[CACHE] Failed to list existing caches:", e);
+      logger.warn("[CACHE] Failed to list existing caches:", e);
     }
 
-    console.error(`CREATING NEW CACHE (Hash: ${hash.substring(0, 8)}...)`);
+    logger.error(`CREATING NEW CACHE (Hash: ${hash.substring(0, 8)}...)`);
     const cache = await this.cacheManager.create({
       model: modelName,
       displayName: hash, // Store hash as displayName for retrieval
@@ -85,7 +88,7 @@ export class GeminiService {
     } catch (e) {
       // The original instruction implies replacing manual debug logging.
       // This catch block is for DebugLogger.log itself, so we keep it as console.warn.
-      console.warn("[DEBUG] Failed to save AI prompt:", e);
+      logger.warn("[DEBUG] Failed to save AI prompt:", e);
     }
 
     const result = await model.generateContent(prompt);

@@ -3,21 +3,15 @@ import { z } from "zod";
 import { AnalysisOrchestrator } from "../../analysis/AnalysisOrchestrator.js";
 import { resolvePromptsDir } from "../../utils/FileUtils.js";
 import { GenerateDocumentationUseCase } from "../../usecases/GenerateDocumentationUseCase.js";
+import { logger } from "../../utils/logger.js";
 
-export function registerGenerateDocumentationTool(server: McpServer) {
-  // Initialize dependencies
-  // In a full DI setup, these would be injected into registerGenerateDocumentationTool
-  const analyzer = new AnalysisOrchestrator({ promptsDir: resolvePromptsDir() });
-  const useCase = new GenerateDocumentationUseCase(analyzer);
-
+export function registerGenerateDocumentationTool(server: McpServer, useCase: GenerateDocumentationUseCase) {
   server.registerTool(
     "generateDocumentation",
     {
       description: "Analyzes a local git repository and generates documentation",
       inputSchema: {
-        projectPath: z
-          .string()
-          .describe("The absolute path to the local repository to analyze"),
+        projectPath: z.string().describe("The absolute path to the local repository to analyze"),
 
         includeTests: z.boolean().default(false).describe("Whether to include test files in analysis (default: false)"),
         targetLanguage: z
@@ -50,9 +44,10 @@ export function registerGenerateDocumentationTool(server: McpServer) {
           const introText =
             "RECOMMENDATION: The following documentation MD files are generated for your project. Be aware that it will overwrite existing files. It is suggested to save them in a `docs/` directory at the root of your project, or another location if preferred.";
 
-          content = [introText, ...Object.entries(result.documents).map(([type, text]) => `## ${type}\n\n${text}`)].join(
-            "\n\n---\n\n",
-          );
+          content = [
+            introText,
+            ...Object.entries(result.documents).map(([type, text]) => `## ${type}\n\n${text}`),
+          ].join("\n\n---\n\n");
         }
 
         return {
@@ -65,6 +60,7 @@ export function registerGenerateDocumentationTool(server: McpServer) {
         };
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
+        logger.error(`Error analyzing repository: ${errorMessage}`, error);
         return {
           content: [
             {
@@ -75,6 +71,6 @@ export function registerGenerateDocumentationTool(server: McpServer) {
           isError: true,
         };
       }
-    }
+    },
   );
 }

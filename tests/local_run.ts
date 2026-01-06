@@ -21,7 +21,7 @@ async function runLocalTest() {
 
   // Path to the MCP server entry point
   // Resolving from current file (src/mcp/index.e2e.ts) to src/mcp/index.ts
-  const serverScriptPath = path.resolve(__dirname, "./index.ts");
+  const serverScriptPath = path.resolve(__dirname, "../src/index.ts");
 
   console.log(`Connecting to server at: ${serverScriptPath}`);
 

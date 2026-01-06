@@ -2,23 +2,31 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { configService } from "./config/ConfigService.js";
 import { registerGenerateDocumentationTool } from "./mcp/tools/GenerateDocumentationTool.js";
+import { logger } from "./utils/logger.js";
 
 // Load environment variables as early as possible
-// CRITICAL: Redirect console.log to console.error to prevent stdout pollution
-// which breaks the MCP protocol (badly behaved dependencies like dotenv might log to stdout)
-// eslint-disable-next-line no-console
-console.log = console.error;
-
 // ConfigService is imported above, which triggers dotenv.config() logic internally
-console.error(`Starting repo-onboarder-mcp in ${configService.NODE_ENV} mode`);
+logger.info(`Starting repo-onboarder-mcp in ${configService.NODE_ENV} mode`);
+
+import { resolvePromptsDir } from "./utils/FileUtils.js";
+import { AnalysisOrchestrator } from "./analysis/AnalysisOrchestrator.js";
+import { GenerateDocumentationUseCase } from "./usecases/GenerateDocumentationUseCase.js";
+import { GeminiService } from "./ai/GeminiService.js";
+
+// ... existing code ...
 
 const server = new McpServer({
   name: "repo-onboarder",
   version: "1.0.0",
 });
 
+// Initialize dependencies
+const geminiService = new GeminiService();
+const analyzer = new AnalysisOrchestrator({ promptsDir: resolvePromptsDir() }, geminiService);
+const useCase = new GenerateDocumentationUseCase(analyzer);
+
 // Register tools
-registerGenerateDocumentationTool(server);
+registerGenerateDocumentationTool(server, useCase);
 
 async function main() {
   const transport = new StdioServerTransport();
@@ -26,6 +34,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error("Server error:", error);
+  logger.error("Server error:", error);
   process.exit(1);
 });

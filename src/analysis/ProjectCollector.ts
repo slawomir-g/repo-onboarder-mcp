@@ -3,6 +3,7 @@ import * as path from "node:path";
 import ignore from "ignore";
 import { isBinaryFile } from "isbinaryfile";
 import { DebugLogger } from "../utils/DebugLogger.js";
+import { logger } from "../utils/logger.js";
 
 export interface FileContent {
   path: string;
@@ -51,7 +52,7 @@ export class ProjectCollector {
         const content = await fs.promises.readFile(filePath, "utf-8");
         fileContents.push({ path: relativePath, content });
       } catch (e) {
-        console.warn(`Failed to read file ${filePath}:`, e);
+        logger.warn(`Failed to read file ${filePath}:`, e);
       }
     }
 
@@ -59,7 +60,7 @@ export class ProjectCollector {
       await DebugLogger.log("repo_snapshot", JSON.stringify(fileContents, null, 2), "json");
       // console.error(`[DEBUG] Saved repo snapshot to ${debugFile}`);
     } catch (e) {
-      console.warn("[DEBUG] Failed to save repo snapshot:", e);
+      logger.warn("[DEBUG] Failed to save repo snapshot:", e);
     }
 
     return fileContents;
@@ -130,7 +131,7 @@ export class ProjectCollector {
           continue;
         }
       } catch (e) {
-        console.warn(`Error checking ignore for ${relativePath}:`, e);
+        logger.warn(`Error checking ignore for ${relativePath}:`, e);
       }
 
       const stat = await fs.promises.stat(filePath);
@@ -151,7 +152,7 @@ export class ProjectCollector {
       const isBinary = await isBinaryFile(filePath);
       return !isBinary;
     } catch (error) {
-      console.warn(`Failed to check if file is binary: ${filePath}`, error);
+      logger.warn(`Failed to check if file is binary: ${filePath}`, error);
       // Fallback to extension check if binary check fails
       const binaryExtensions = [
         ".png",
@@ -165,6 +166,7 @@ export class ProjectCollector {
         ".class",
         ".exe",
         ".bin",
+        ".class", // Note: Duplicate class extension in original list, keeping simple
       ];
       const ext = path.extname(filePath).toLowerCase();
       return !binaryExtensions.includes(ext);

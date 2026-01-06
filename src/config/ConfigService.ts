@@ -2,7 +2,7 @@ import { z } from "zod";
 import * as dotenv from "dotenv";
 
 // Load environment variables immediately when this module is imported
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const configSchema = z.object({
   GEMINI_API_KEY: z.string().min(1, "GEMINI_API_KEY is required"),
