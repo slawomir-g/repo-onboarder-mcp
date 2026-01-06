@@ -25,6 +25,9 @@ export class MockGeminiService implements IGeminiService {
 
 This is a mocked response from Gemini.
 
+## Prompt Received
+${prompt}
+
 ## Analysis
 The code analyzed suggests this is a simple test repository.
 

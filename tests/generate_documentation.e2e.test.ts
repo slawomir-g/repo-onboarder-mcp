@@ -44,6 +44,19 @@ describe("Mock E2E Documentation Generation", () => {
     await client.close();
   });
 
+  it("should list generateDocumentation tool", async () => {
+    const tools = await client.listTools();
+    console.log(
+      "Available tools:",
+      tools.tools.map((t) => t.name),
+    );
+
+    const toolName = "generateDocumentation";
+    const tool = tools.tools.find((t) => t.name === toolName);
+
+    expect(tool).toBeDefined();
+  });
+
   it("should generate documentation using mocked Gemini service", async () => {
     const toolName = "generateDocumentation";
     
@@ -65,7 +78,13 @@ describe("Mock E2E Documentation Generation", () => {
     expect(fs.existsSync(expectedFile)).toBeTruthy();
 
     const content = fs.readFileSync(expectedFile, "utf-8");
-    expect(content).toContain("# Mock Documentation");
-    expect(content).toContain("This is a mocked response from Gemini");
+    expect(content).toContain(`
+You are an expert Software Architect and Technical Writer. Your task is to analyze repository data and generate a high-quality README.md for the project.
+
+Here is the repository context data you need to analyze:
+
+(Context provided via Context Caching)
+
+## Critical Constraints`.trim());
   });
 });
