@@ -14,14 +14,10 @@
     "test:coverage": "vitest run --coverage",
     "test:local": "tsx tests/local_run.ts",
     "lint": "biome check src",
-    "format": "biome format src --write"
+    "format": "biome check --write --no-errors-on-unmatched",
+    "prepare": "husky"
   },
-  "keywords": [
-    "mcp",
-    "git",
-    "ai",
-    "gemini"
-  ],
+  "keywords": ["mcp", "git", "ai", "gemini"],
   "author": "",
   "license": "MIT",
   "dependencies": {
@@ -39,8 +35,13 @@
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
     "@types/node": "^22.5.5",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "tsx": "^4.21.0",
     "typescript": "^5.5.3",
     "vitest": "^4.0.16"
+  },
+  "lint-staged": {
+    "*.{js,ts,cjs,mjs,d.cts,d.mts,json,jsonc}": ["npm run format"]
   }
 }
