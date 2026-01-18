@@ -15,11 +15,14 @@
     "test:local": "tsx tests/local_run.ts",
     "lint": "biome check src",
     "format": "biome check --write --no-errors-on-unmatched",
-    "prepare": "husky"
+    "prepare": "husky && npm run build"
   },
   "keywords": ["mcp", "git", "ai", "gemini"],
   "author": "",
   "license": "MIT",
+  "bin": {
+    "repo-onboarder-mcp": "./dist/src/index.js"
+  },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@modelcontextprotocol/sdk": "^1.0.1",

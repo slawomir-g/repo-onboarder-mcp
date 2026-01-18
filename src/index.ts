@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { configService } from "./config/ConfigService.js";
@@ -8,10 +9,10 @@ import { logger } from "./utils/logger.js";
 // ConfigService is imported above, which triggers dotenv.config() logic internally
 logger.info(`Starting repo-onboarder-mcp in ${configService.NODE_ENV} mode`);
 
-import { resolvePromptsDir } from "./utils/FileUtils.js";
+import { GeminiService } from "./ai/GeminiService.js";
 import { AnalysisOrchestrator } from "./analysis/AnalysisOrchestrator.js";
 import { GenerateDocumentationUseCase } from "./usecases/GenerateDocumentationUseCase.js";
-import { GeminiService } from "./ai/GeminiService.js";
+import { resolvePromptsDir } from "./utils/FileUtils.js";
 
 // ... existing code ...
 
